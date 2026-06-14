@@ -131,10 +131,42 @@ function initApp() {
   document.getElementById('roleIndicator').textContent = '👤 ' + (currentRole === 'admin' ? 'Admin' : currentRole === 'dosen' ? 'Dosen' : 'Mahasiswa');
   buildNav();
   // Ubah fungsi showPage menjadi seperti ini:
+// === FUNGSI MENU MOBILE ===
+function toggleMobileMenu() {
+  const sidebar = document.querySelector('.sidebar');
+  sidebar.classList.toggle('mobile-open');
+}
+
+// === FUNGSI NAVIGASI ===
 function showPage(pageId) {
   document.querySelectorAll('.nav-item').forEach(i => { i.classList.toggle('active', i.dataset.page === pageId); });
+  
   const titles = { dashboard:'Dashboard', konsultasi:'Semua Konsultasi', mahasiswa:'Data Mahasiswa', dosen:'Data Dosen', kategori:'Kategori Konsultasi', jadwal:'Jadwal Konsultasi', laporan:'Laporan & Statistik', notifikasi:'Notifikasi', pengajuan:'Pengajuan Masuk', riwayat:'Riwayat Konsultasi', ajukan:'Ajukan Konsultasi', status:'Status Pengajuan' };
   
+  document.getElementById('pageTitle').textContent = titles[pageId] || pageId;
+  document.getElementById('pageBreadcrumb').textContent = 'NARASA / ' + (titles[pageId] || pageId);
+  
+  const content = document.getElementById('pageContent');
+  content.innerHTML = renderPage(pageId);
+  
+  // Render Grafik Jika Diperlukan
+  if (pageId === 'dashboard') renderCharts();
+  if (pageId === 'laporan') renderLaporanCharts();
+  
+  // Perintah Buka Modal Pengajuan
+  if (pageId === 'ajukan') { 
+      openModal('modalPengajuan'); 
+      showPage('dashboard'); 
+  }
+
+  // LOGIKA RESPONSIVE: Otomatis tutup menu di layar HP setelah menu dipilih
+  if (window.innerWidth <= 768) {
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar.classList.contains('mobile-open')) {
+          sidebar.classList.remove('mobile-open');
+      }
+  }
+}
   document.getElementById('pageTitle').textContent = titles[pageId] || pageId;
   document.getElementById('pageBreadcrumb').textContent = 'NARASA / ' + (titles[pageId] || pageId);
   
