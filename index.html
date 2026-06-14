@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NARASA – Navigasi dan Arahan Akademik</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+</head>
+<body>
+
+<div class="role-indicator" id="roleIndicator">👤 Admin</div>
+
+<div class="auth-page" id="authPage">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-logo"><i class="fas fa-compass"></i></div>
+      <h1>NARASA</h1>
+      <p>Navigasi dan Arahan Akademik</p>
+    </div>
+    <div class="auth-tagline">
+      <h2 id="carouselTitle" style="transition: opacity 0.3s;">Platform Konsultasi Digital Terintegrasi</h2>
+      <p id="carouselDesc" style="transition: opacity 0.3s;">Menghubungkan mahasiswa, dosen, dan program studi<br>dalam ekosistem konsultasi akademik yang cerdas.</p>
+    </div>
+    <div class="auth-dots" id="carouselDots">
+      <span class="active" onclick="changeCarousel(0)"></span>
+      <span onclick="changeCarousel(1)"></span>
+      <span onclick="changeCarousel(2)"></span>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="auth-form-box">
+      <h2>Selamat Datang</h2>
+      <p>Masuk ke akun NARASA Anda</p>
+      <div class="role-tabs">
+        <button class="role-tab active" onclick="selectRole('admin',this)">Admin</button>
+        <button class="role-tab" onclick="selectRole('dosen',this)">Dosen</button>
+        <button class="role-tab" onclick="selectRole('mahasiswa',this)">Mahasiswa</button>
+      </div>
+      <div class="form-group">
+        <label>Email / NIM / NIP</label>
+        <input type="text" placeholder="Masukkan identitas Anda" id="loginId">
+      </div>
+      <div class="form-group">
+        <label>Kata Sandi</label>
+        <input type="password" placeholder="••••••••" id="loginPass">
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Masuk ke NARASA</button>
+      <div class="auth-footer">
+        <p>Teknologi Pendidikan – Universitas Lambung Mangkurat</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="app hidden" id="mainApp">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-inner">
+        <div class="logo-icon"><i class="fas fa-compass"></i></div>
+        <div class="logo-text">
+          <h2>NARASA</h2>
+          <p>Teknologi Pendidikan</p>
+        </div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <div class="user-card" onclick="logout()">
+        <div class="user-avatar" id="sidebarAvatar">A</div>
+        <div class="user-info">
+          <p id="sidebarName">Admin</p>
+          <span id="sidebarRole">Administrator</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main-content">
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <div class="breadcrumb" id="pageBreadcrumb">NARASA / Dashboard</div>
+        </div>
+      </div>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-btn" onclick="showPage('notifikasi')"><i class="fas fa-bell"></i><div class="notif-dot"></div></div>
+        <div class="topbar-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i></div>
+      </div>
+    </div>
+    <div class="page-content" id="pageContent"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalPengajuan">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-plus-circle text-teal" style="margin-right:8px"></i>Ajukan Konsultasi Baru</h3>
+      <button class="close-btn" onclick="closeModal('modalPengajuan')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-field">
+          <label>Kategori Konsultasi *</label>
+          <select id="formKategori" onchange="matchDosen(this.value)">
+            <option value="">-- Pilih Kategori --</option>
+            <optgroup label="Akademik">
+              <option value="skripsi">Bimbingan Skripsi</option>
+              <option value="proposal">Bimbingan Proposal</option>
+              <option value="matkul">Konsultasi Mata Kuliah</option>
+              <option value="ta">Konsultasi Tugas Akhir</option>
+              <option value="penelitian">Konsultasi Penelitian</option>
+            </optgroup>
+            <optgroup label="Non Akademik">
+              <option value="magang">Magang / PKL</option>
+              <option value="karier">Karier & Pengembangan Diri</option>
+              <option value="organisasi">Organisasi & Kepemimpinan</option>
+              <option value="media">Pengembangan Media Pembelajaran</option>
+              <option value="umum">Konsultasi Umum Mahasiswa</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Dosen Pembimbing (Otomatis)</label>
+          <div class="dosen-chip" id="dosenChip" style="display:none"><i class="fas fa-user-tie"></i><span id="dosenChipName"></span></div>
+          <input type="text" id="formDosen" placeholder="Dipilih otomatis..." readonly style="display:block">
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Topik Konsultasi *</label>
+        <input type="text" id="formTopik" placeholder="Contoh: Revisi BAB III metodologi penelitian">
+      </div>
+      <div class="form-field">
+        <label>Deskripsi / Pertanyaan</label>
+        <textarea id="formDesc" rows="3" placeholder="Jelaskan secara singkat hal yang ingin dikonsultasikan..."></textarea>
+      </div>
+      <div class="form-field">
+        <label>Metode Konsultasi *</label>
+        <div class="method-grid">
+          <div class="method-card active" onclick="selectMethod(this,'tatap')"><i class="fas fa-users"></i><span>Tatap Muka</span></div>
+          <div class="method-card" onclick="selectMethod(this,'online')"><i class="fas fa-video"></i><span>Online</span></div>
+          <div class="method-card" onclick="selectMethod(this,'hybrid')"><i class="fas fa-layer-group"></i><span>Hybrid</span></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Tanggal *</label>
+          <input type="date" id="formTanggal">
+        </div>
+        <div class="form-field">
+          <label>Waktu *</label>
+          <input type="time" id="formWaktu">
+        </div>
+      </div>
+      <div class="form-field">
+      <label>Upload Dokumen Pendukung</label>
+        <div class="upload-area" onclick="document.getElementById('fileDokumen').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <p>Klik di sini untuk <strong style="color:var(--teal)">memilih file</strong></p>
+        <input type="file" id="fileDokumen" style="display:none" accept=".pdf,.doc,.docx,.jpg,.png">
+        </div>
+        <p id="namaFileTerpilih" style="font-size:0.8rem; color:var(--teal); margin-top:8px; font-weight:600;"></p>
+    </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalPengajuan')">Batal</button>
+      <button class="btn btn-teal" onclick="submitKonsultasi()"><i class="fas fa-paper-plane"></i> Kirim Pengajuan</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalDetail">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-clipboard-list text-teal" style="margin-right:8px"></i>Detail Pengajuan Konsultasi</h3>
+      <button class="close-btn" onclick="closeModal('modalDetail')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:1rem;margin-bottom:1rem">
+        <div class="flex items-center gap-3 mb-1">
+          <div class="user-avatar" style="width:40px;height:40px">AM</div>
+          <div>
+            <p class="font-semibold">Ahmad Maulana</p>
+            <span class="text-sm">2110125110032 · Semester 7</span>
+          </div>
+          <span class="badge badge-pending" style="margin-left:auto">Menunggu</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem">
+        <div><p class="text-sm">Kategori</p><p class="font-semibold" style="margin-top:2px">Bimbingan Skripsi</p></div>
+        <div><p class="text-sm">Metode</p><p class="font-semibold" style="margin-top:2px">Tatap Muka</p></div>
+        <div><p class="text-sm">Tanggal Diajukan</p><p class="font-semibold" style="margin-top:2px">14 Juni 2025</p></div>
+        <div><p class="text-sm">Tanggal Diinginkan</p><p class="font-semibold" style="margin-top:2px">18 Juni 2025, 09.00</p></div>
+      </div>
+      <div style="margin-bottom:1rem"><p class="text-sm">Topik</p><p style="font-size:0.88rem;margin-top:4px;font-weight:600">Revisi metodologi penelitian BAB III – pendekatan mixed method</p></div>
+      <div style="margin-bottom:1.25rem"><p class="text-sm">Deskripsi</p><p style="font-size:0.83rem;margin-top:4px;color:var(--text-muted)">Saya ingin mendiskusikan perubahan metode penelitian dari kualitatif ke mixed method, dan meminta masukan tentang instrumen yang perlu disiapkan.</p></div>
+      <div style="background:var(--bg);border-radius:var(--radius-sm);padding:12px;margin-bottom:1.25rem">
+        <p class="text-sm mb-1"><i class="fas fa-paperclip" style="margin-right:4px"></i>Dokumen Pendukung</p>
+        <div class="flex items-center gap-2" style="margin-top:6px">
+          <i class="fas fa-file-pdf" style="color:var(--danger)"></i>
+          <span style="font-size:0.82rem">Draft_BAB3_Ahmad.pdf</span>
+          <button class="btn btn-sm btn-outline" style="margin-left:auto"><i class="fas fa-download"></i> Unduh</button>
+        </div>
+      </div>
+      <div class="form-field"><label>Catatan untuk Mahasiswa (opsional)</label><textarea rows="2" placeholder="Tulis catatan atau instruksi tambahan..."></textarea></div>
+      <div class="form-row">
+        <div class="form-field"><label>Jadwal Ulang (jika perlu)</label><input type="datetime-local"></div>
+        <div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="closeModal('modalDetail')"><i class="fas fa-times-circle"></i> Tolak</button>
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modalDetail')"><i class="fas fa-calendar-alt"></i> Jadwalkan Ulang</button>
+      <button class="btn btn-teal btn-sm" onclick="closeModal('modalDetail')"><i class="fas fa-check-circle"></i> Setujui</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalHasil">
+  <div class="modal">
+    <div class="modal-header">
+      <h3><i class="fas fa-edit text-teal" style="margin-right:8px"></i>Isi Hasil Konsultasi</h3>
+      <button class="close-btn" onclick="closeModal('modalHasil')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field"><label>Ringkasan Konsultasi</label><textarea rows="3" placeholder="Rangkum apa yang dibahas dalam sesi konsultasi ini..."></textarea></div>
+      <div class="form-field"><label>Catatan Revisi</label><textarea rows="2" placeholder="Tuliskan revisi atau perbaikan yang harus dilakukan mahasiswa..."></textarea></div>
+      <div class="form-field"><label>Tindak Lanjut</label><textarea rows="2" placeholder="Langkah selanjutnya yang perlu dilakukan..."></textarea></div>
+      <div class="form-field"><label>Upload Dokumen Hasil</label><div class="upload-area"><i class="fas fa-cloud-upload-alt"></i><p>Drag & drop atau <strong style="color:var(--teal)">klik untuk memilih</strong></p></div></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modalHasil')">Simpan Draft</button>
+      <button class="btn btn-teal" onclick="closeModal('modalHasil')"><i class="fas fa-check"></i> Selesaikan Konsultasi</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
